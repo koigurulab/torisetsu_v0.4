@@ -262,7 +262,7 @@ ${JSON.stringify(answers)}
     }
 
     const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
+    const decoder = new TextDecoder("utf-8");
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -270,24 +270,30 @@ ${JSON.stringify(answers)}
         controller.enqueue(encoder.encode(" "));
 
         const reader = openaiResp.body.getReader();
+        let buffer = "";
 
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
 
-            const lines = chunk
-              .split("\n")
-              .map(l => l.trim())
-              .filter(l => l.startsWith("data:"));
+            // chunk を文字列化してバッファに追記
+            buffer += decoder.decode(value, { stream: true });
 
-            for (const line of lines) {
+            // 改行で分割し、最後の不完全行だけバッファに残す
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const raw of lines) {
+              const line = raw.trim();
+              if (!line.startsWith("data:")) continue;
+
               const data = line.replace(/^data:\s*/, "");
               if (data === "[DONE]") {
                 controller.close();
                 return;
               }
+
               try {
                 const json = JSON.parse(data);
                 const delta = json.choices?.[0]?.delta?.content || "";
@@ -295,7 +301,24 @@ ${JSON.stringify(answers)}
                   controller.enqueue(encoder.encode(delta));
                 }
               } catch {
-                // SSE の途中行など、JSON でなければ無視
+                // JSON でない行（コメントなど）はスキップ
+              }
+            }
+          }
+
+          // ループ終了後、バッファに残った最終行も一応処理
+          const last = buffer.trim();
+          if (last.startsWith("data:")) {
+            const data = last.replace(/^data:\s*/, "");
+            if (data !== "[DONE]") {
+              try {
+                const json = JSON.parse(data);
+                const delta = json.choices?.[0]?.delta?.content || "";
+                if (delta) {
+                  controller.enqueue(encoder.encode(delta));
+                }
+              } catch {
+                // 無視
               }
             }
           }
