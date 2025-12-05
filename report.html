@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>恋愛トリセツ仙人（無料トリセツ）</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f5f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+    .app {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      box-shadow: 0 0 8px rgba(0,0,0,0.08);
+    }
+    .header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #ddd;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header small {
+      font-size: 11px;
+      color: #888;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      padding: 12px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    .sennin-column {
+      width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+    }
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #ffccd8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 24px;
+      color: #b0003a;
+      margin-bottom: 8px;
+    }
+    .avatar-label {
+      font-size: 11px;
+      color: #666;
+    }
+    .report-column {
+      flex: 1;
+      padding-left: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+    .report-bubble {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+    }
+    .report-bubble::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 16px;
+      border-width: 8px;
+      border-style: solid;
+      border-color: transparent #ffffff transparent transparent;
+      filter: drop-shadow(-1px 0 1px rgba(0,0,0,0.06));
+    }
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #888;
+    }
+    .footer {
+      padding: 8px 12px;
+      border-top: 1px solid #ddd;
+      font-size: 12px;
+      color: #777;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer a {
+      color: #007aff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <span>恋愛トリセツ仙人（無料トリセツ）</span>
+      <small>いま仙人が執筆中…</small>
+    </div>
+    <div class="main">
+      <div class="sennin-column">
+        <div class="avatar">仙</div>
+        <div class="avatar-label">恋愛トリセツ仙人</div>
+      </div>
+      <div class="report-column">
+        <div id="report-bubble" class="report-bubble">
+          ふむ……さきほど答えてもらった内容をもとに、今からお主専用の恋愛トリセツを書き起こしていくぞい……。
+        </div>
+        <div id="status" class="status">トリセツ生成中…</div>
+      </div>
+    </div>
+    <div class="footer">
+      <span>※ 完成したらこの画面をスクショ保存してもよいぞ。</span>
+      <a href="index.html">やり直す</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const reportEl = document.getElementById("report-bubble");
+      const statusEl = document.getElementById("status");
+
+      // localStorage から回答を取得
+      let answersRaw = null;
+      try {
+        answersRaw = localStorage.getItem("freeReportAnswers");
+      } catch (e) {
+        console.error("localStorage 読み込みエラー:", e);
+      }
+
+      if (!answersRaw) {
+        reportEl.textContent =
+          "すまぬのう、事前の質問への回答が見つからん。\nもう一度最初からやり直してくれると助かるぞい。";
+        statusEl.textContent = "エラー：回答データが見つかりませんでした。";
+        return;
+      }
+
+      let answers = null;
+      try {
+        answers = JSON.parse(answersRaw);
+      } catch (e) {
+        console.error("JSON parse error:", e);
+        reportEl.textContent =
+          "回答データの読み込みに失敗してしまったようじゃ。\nお手数じゃが、もう一度最初から答えてもらえるかのう…。";
+        statusEl.textContent = "エラー：データ形式が不正です。";
+        return;
+      }
+
+      // ストリーミング開始
+      generateStreamingReport(answers, reportEl, statusEl);
+    });
+
+    async function generateStreamingReport(answers, reportEl, statusEl) {
+      try {
+        const res = await fetch("/api/free-report-stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(answers)
+        });
+
+        if (!res.ok || !res.body) {
+          reportEl.textContent =
+            "すまぬ、トリセツの生成中にエラーが起きてしまったようじゃ…。時間をおいて試してみてくれい。";
+          statusEl.textContent = "エラーが発生しました。";
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let firstChunk = true;
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          if (!chunk) continue;
+
+          if (firstChunk) {
+            // 最初の一塊が来たタイミングで、プレースホルダ文を消して差し替える
+            reportEl.textContent = "";
+            firstChunk = false;
+          }
+          reportEl.textContent += chunk;
+        }
+
+        statusEl.textContent = "トリセツの生成が完了したぞい。";
+      } catch (e) {
+        console.error(e);
+        reportEl.textContent =
+          "通信エラーが起きておるようじゃ。\nネット環境などを確認して、もう一度アクセスしてみてくれい。";
+        statusEl.textContent = "通信エラーが発生しました。";
+      }
+    }
+  </script>
+</body>
+</html>
