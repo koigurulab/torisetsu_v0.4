@@ -180,8 +180,8 @@
         currentStatus: {
           hasPerson: "",
           detail: ""
-        }
-        // followups は今後追加するならここに足す
+        },
+        followups: [] // 追加質問5つを {id, answer} で入れる
       }
     };
 
@@ -337,8 +337,43 @@
         id: "currentStatus",
         type: "text",
         question:
-          "最後に、今の状況も少しだけ聞かせてくれんか。\n今“この人のことで頭がいっぱい”な相手はおるかの？\nいる／いない に続けて、いる場合は「会社の同期」「アプリで出会った同い年」など一言で書いてくれい。\n例）いる, 会社の同期",
+          "ここまでだいぶ輪郭が見えてきたのう。\n今の状況も少しだけ聞かせてくれんか。\n今“この人のことで頭がいっぱい”な相手はおるかの？\nいる／いない に続けて、いる場合は「会社の同期」「アプリで出会った同い年」など一言で書いてくれい。\n例）いる, 会社の同期",
         placeholder: "例）いる, 会社の同期 / いない"
+      },
+      {
+        id: "worst_moment",
+        type: "text",
+        question:
+          "ここからは少しだけ踏み込んだ話じゃ。\n直近の恋か、一番印象に残っている恋で「いちばんしんどかった瞬間」と、そのとき心の中で浮かんでいた言葉を、ざっくりでよいので教えてくれい。\n例）連絡が急に減って『あ、もう終わったかも』と思った など",
+        placeholder: "思い出せる範囲で、ざっくり書いてくれい"
+      },
+      {
+        id: "habit",
+        type: "text",
+        question:
+          "次に、おぬし自身が『恋するとだいたいこうしがちだな』と思っている行動やクセがあれば教えてくれい。\n良いクセでも、ちょっと困るクセでもどちらでも構わんぞ。",
+        placeholder: "例）相手を最優先にしすぎて予定を詰め込みがち など"
+      },
+      {
+        id: "red_line",
+        type: "text",
+        question:
+          "恋で『ここだけは譲れない』『これをされると一気に冷める』というラインがあれば、できる範囲で書いてみてくれい。",
+        placeholder: "例）嘘をつかれること、約束を何度も破られること など"
+      },
+      {
+        id: "repeat_pattern",
+        type: "text",
+        question:
+          "過去の恋をまとめて振り返ったときに、『毎回だいたいこういう展開になるな…』と感じる共通パターンがあれば教えてくれい。",
+        placeholder: "例）最初は盛り上がるが、数か月後に温度差が出てくる など"
+      },
+      {
+        id: "ideal_self",
+        type: "text",
+        question:
+          "最後に、『こんな恋の仕方ができる自分になりたい』という理想像を聞かせてくれい。\nゆるく妄想レベルでも大丈夫じゃ。",
+        placeholder: "例）お互いの時間も大事にしつつ、安心して何でも話せる関係 など"
       }
     ];
 
@@ -401,6 +436,17 @@
           const detail = parts[1] || "";
           state.answers.currentStatus.hasPerson = hasPerson;
           state.answers.currentStatus.detail = detail;
+          break;
+        }
+        case "worst_moment":
+        case "habit":
+        case "red_line":
+        case "repeat_pattern":
+        case "ideal_self": {
+          if (!Array.isArray(state.answers.followups)) {
+            state.answers.followups = [];
+          }
+          state.answers.followups.push({ id: stepId, answer: text });
           break;
         }
         default:
@@ -539,7 +585,7 @@
           const line1 = `おお、「${userText}」を大事にしたいんじゃな。`;
           const line2 = `それは、お主がどんな関係を“理想の恋”と感じているかを知るうえで、とても大事なヒントになる。`;
           const line3 = `この価値観に沿って動けるとき、お主の恋は一番輝きやすいはずじゃ。`;
-          const bridge = `最後に、今の恋の状況を少しだけ聞いて、無料トリセツをまとめていくぞい。`;
+          const bridge = `では、今の恋の状況を少しだけ聞いてから、もう一段深い話に入っていこうかの。`;
           return [line1, line2, line3, bridge].join("\n");
         }
         case "currentStatus": {
@@ -547,10 +593,41 @@
           const status = a.currentStatus.hasPerson || "状況";
           const detail = a.currentStatus.detail ? `（${a.currentStatus.detail}）` : "";
           const line1 = `なるほど、今は「${status}」という状況なんじゃな${detail}。`;
-          const line2 = `その前提も踏まえて、${name}専用の恋愛トリセツを組み立ててみるとしよう。`;
-          const line3 = `ここまで答えてくれてありがとうよ。お主の答えは、すべてトリセツの材料になっておる。`;
-          const line4 = `このあと、別の画面で無料版の恋愛トリセツを順番に書き起こしていくから、そちらも楽しみにしておるのじゃ。`;
-          return [line1, line2, line3, line4].join("\n");
+          const line2 = `今の立ち位置を押さえておくと、これから話す“山と谷”のエピソードも整理しやすくなるのう。`;
+          const line3 = `ここからは、これまでの恋で一番きつかった場面や、無意識のクセを少しだけ深掘りしていこうか。`;
+          const bridge = `まずは、直近の恋などで「いちばんしんどかった瞬間」と、そのとき心の中で浮かんでいた言葉を教えてくれい。`;
+          return [line1, line2, line3, bridge].join("\n");
+        }
+        case "worst_moment": {
+          const line1 = `うむ、その場面はかなり心に残っておるようじゃな。「${userText}」という経験は、おぬしの中で一つの谷になっておる。`;
+          const line2 = `そこでどんな言葉が頭に浮かんだかは、普段は意識していない“自動思考”を見つける手がかりになるんじゃ。`;
+          const bridge = `次に、おぬし自身が『恋するとついやってしまうクセ』についても聞かせてくれい。`;
+          return [line1, line2, bridge].join("\n");
+        }
+        case "habit": {
+          const line1 = `ほう、「${userText}」というのが自分で自覚しておるクセなんじゃな。`;
+          const line2 = `良い面もあれば、しんどさにつながる面もあるが、自覚できておる時点でかなり一歩リードしておると言えるのう。`;
+          const bridge = `では次に、恋で『ここだけは譲れない』『これをされると冷める』というラインも教えてくれい。`;
+          return [line1, line2, bridge].join("\n");
+        }
+        case "red_line": {
+          const line1 = `「${userText}」というラインは、おぬしが人間関係で大事にしたい尊厳や安心の境界線なんじゃろう。`;
+          const line2 = `ここを言語化しておくと、相手選びや距離感の取り方で迷いにくくなるのう。`;
+          const bridge = `続いて、過去の恋を振り返ったときに『毎回だいたいこうなる』と感じる共通パターンも教えてくれい。`;
+          return [line1, line2, bridge].join("\n");
+        }
+        case "repeat_pattern": {
+          const line1 = `ふむ、「${userText}」という流れになりやすいと感じておるんじゃな。`;
+          const line2 = `これはたまたまではなく、おぬしのクセと相手との相性が組み合わさって出来上がった“テンプレ展開”と言えるかもしれん。`;
+          const bridge = `最後に、そのテンプレを塗り替えていくための『理想の自分像』を聞かせてもらおうか。`;
+          return [line1, line2, bridge].join("\n");
+        }
+        case "ideal_self": {
+          const name = p.name || "お主";
+          const line1 = `いいのう、「${userText}」という理想像は、おぬしの中にすでにある願いの形じゃ。`;
+          const line2 = `ここまでの答えを全部まとめて、今のスタイルと理想像のあいだにあるギャップを整理しつつ、${name}専用の恋愛トリセツを組み立ててみるとしよう。`;
+          const line3 = `ここまで丁寧に答えてくれてありがとうよ。このあと別の画面で、わしが一枚もののトリセツとして書き起こしていくから、楽しみにしておるのじゃ。`;
+          return [line1, line2, line3].join("\n");
         }
         default:
           return "";
@@ -636,7 +713,6 @@
     // -----------------------------
     function askCurrentQuestion() {
       if (state.stepIndex >= steps.length) {
-        // ここでは何もしない（終了時は handleStepAnswer 側で処理）
         return;
       }
       const step = steps[state.stepIndex];
@@ -675,7 +751,6 @@
         optionArea.innerHTML = "";
         optionNoteEl.style.display = "none";
 
-        // 遷移
         window.location.href = "report.html";
       }
     }
