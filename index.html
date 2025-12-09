@@ -36,11 +36,12 @@
       max-width: 100%;
     }
 
-    /* チャットログ（下の固定フッター分だけ余白） */
-    #chat-log {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 12px 96px;
+
+/* 変更後 */
+#chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 12px 16px; /* ベースは小さくしておく */
     }
 
     .msg {
@@ -197,7 +198,26 @@
       const textAreaRow = document.getElementById("text-area-row");
       const optionArea = document.getElementById("option-area");
       const optionNoteEl = document.getElementById("option-note");
+      const footer = document.querySelector(".footer");
 
+      function adjustChatPadding() {
+        if (!chatLog || !footer) return;
+        const footerHeight = footer.offsetHeight || 0;
+        // フッターの高さ＋少し余白を下パディングに反映
+        chatLog.style.paddingBottom = footerHeight + 16 + "px";
+      }
+
+      // 初期計算
+      adjustChatPadding();
+
+      // 画面サイズ変化時
+      window.addEventListener("resize", adjustChatPadding);
+
+      // フッターの高さ変化（選択肢が増えたとき等）にも追随
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(adjustChatPadding);
+        ro.observe(footer);
+      }
       // 会話の状態
       const state = {
         stepIndex: 0,
