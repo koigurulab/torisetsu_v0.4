@@ -4,25 +4,32 @@
   <meta charset="UTF-8" />
   <title>恋愛トリセツ仙人（無料トリセツインテーク）</title>
   <style>
-    /* 全体の背景をピンク、中央にLINE風のチャット画面 */
-    body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #ffe6f0;          /* 外側をピンクのまま */
+    /* ① 追加：横スクロールを殺す＆高さを固定 */
+body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow-x: hidden;   /* 横スクロール無効 */
+}
+    
+    /* 全体の背景をピンク、中央にLINE風のチャット画面 */
+   body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #ffe6f0;
   display: flex;
   justify-content: center;
     }
- /* ② .app を置き換え（height:100vh を削除＋余白・角丸を追加） */
+/* ③ .app（min-height を追加して下の余白を潰す） */
 .app {
   width: 100%;
-  max-width: 420px;             /* iPhoneでも細めに見える幅 */
-  margin: 16px auto;            /* 上下左右に余白をつける */
+  max-width: 420px;
+  margin: 16px auto;                        /* 上下16pxだけ外側に余白 */
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  border-radius: 16px;          /* カードっぽく角丸 */
+  border-radius: 16px;
   box-shadow: 0 0 8px rgba(0,0,0,0.08);
+  min-height: calc(100vh - 32px);           /* 画面ほぼいっぱいの高さにする */
     }
 
     /* ヘッダー＋説明文（上部固定） */
