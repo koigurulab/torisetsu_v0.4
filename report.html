@@ -4,47 +4,64 @@
   <meta charset="UTF-8" />
   <title>恋愛トリセツ仙人（無料トリセツ）</title>
   <style>
+    /* 画面全体：スマホ前提、中央に巻物カード */
     body {
       margin: 0;
       padding: 0;
-      background: #f5f5f7;
+      background: #ffe7f0; /* ピンクベース */
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       display: flex;
       justify-content: center;
     }
+
     .app {
       width: 100%;
       max-width: 480px;
       min-height: 100vh;
-      background: #ffffff;
-      box-shadow: 0 0 8px rgba(0,0,0,0.08);
+      background: transparent;
       display: flex;
       flex-direction: column;
     }
+
     .header {
-      padding: 12px 16px;
-      border-bottom: 1px solid #ddd;
+      padding: 10px 14px;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
+      color: #c9415f;
     }
+
     .main {
       flex: 1;
-      padding: 12px;
-      background: #fafafa;
+      padding: 0 10px 20px;
       overflow-y: auto;
+      box-sizing: border-box;
     }
+
+    /* 巻物カード本体 */
     .card {
-      background: #fff;
-      border-radius: 16px;
-      border: 1px solid #eee;
-      padding: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      position: relative;
+      margin: 4px auto 24px;
+      padding: 22px 18px 18px;
+      max-width: 460px;
+      background: #fffdf7;
+      border-radius: 24px;
+      border: 1px solid #f2d1c4;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+      box-sizing: border-box;
+      /* 巻物画像を用意できたらパスを差し替え */
+      /* background-image: url("/scroll-paper.png"); */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center top;
     }
+
+    /* 上部の仙人アイコン＋タイトル */
     .card-header {
       display: flex;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
+
     .avatar {
       width: 40px;
       height: 40px;
@@ -57,29 +74,59 @@
       font-weight: 700;
       margin-right: 10px;
       font-size: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
     .meta-title {
       font-size: 14px;
       font-weight: 600;
+      color: #333;
     }
+
     .meta-sub {
       font-size: 12px;
-      color: #666;
+      color: #777;
       margin-top: 2px;
     }
-    .card-body {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #f0f0f0;
-      font-size: 14px;
-      line-height: 1.7;
-      white-space: pre-wrap;   /* 改行・空行をそのまま表示 */
+
+    /* キャッチコピー（中央にドンと置く） */
+    .catch-copy {
+      margin: 10px auto 16px;
+      padding: 4px 8px 0;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.5;
+      text-align: center;
+      color: #c9415f;
       word-break: break-word;
     }
+
+    /* 本文エリア（巻物の中身） */
+    .scroll-body {
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid #f4d7c6;
+      font-size: 14px;
+      line-height: 1.8;
+      white-space: pre-wrap;  /* 改行を維持 */
+      word-break: break-word;
+      color: #333;
+    }
+
     .card-footer {
       margin-top: 12px;
       font-size: 12px;
       color: #777;
+      text-align: right;
+    }
+
+    @media (min-width: 600px) {
+      .catch-copy {
+        font-size: 22px;
+      }
+      .scroll-body {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -95,7 +142,16 @@
             <div class="meta-sub" id="nickname-line">いま仙人が執筆中じゃ…</div>
           </div>
         </div>
-        <div id="report-body" class="card-body"></div>
+
+        <!-- キャッチコピー -->
+        <div id="catch-copy" class="catch-copy">
+          <!-- 生成後に差し込む -->
+        </div>
+
+        <!-- 本文 -->
+        <div id="report-body" class="scroll-body"></div>
+
+        <!-- ステータス -->
         <div id="status" class="card-footer">
           トリセツを生成しておるから、しばし待つのじゃ…
         </div>
@@ -108,11 +164,13 @@
       const bodyEl   = document.getElementById("report-body");
       const statusEl = document.getElementById("status");
       const nickEl   = document.getElementById("nickname-line");
+      const catchEl  = document.getElementById("catch-copy");
 
       // インテークから保存しておいた回答を取得
       let raw = localStorage.getItem("freeReportAnswers");
       if (!raw) {
         statusEl.textContent = "インテークの回答が見つからん。最初の画面からやり直してくれい。";
+        catchEl.textContent = "";
         return;
       }
 
@@ -122,13 +180,14 @@
       } catch (e) {
         console.error(e);
         statusEl.textContent = "データの読み込みに失敗したようじゃ…。";
+        catchEl.textContent = "";
         return;
       }
 
       const name = answers?.profile?.name || "お主";
       nickEl.textContent = `${name}のトリセツを執筆中じゃ…`;
 
-      // ストリーミングでレポート取得
+      // ストリーミングでレポート取得（全文をバッファしてから整形）
       async function fetchReport() {
         try {
           const resp = await fetch("/api/free-report-stream", {
@@ -139,32 +198,68 @@
 
           if (!resp.ok || !resp.body) {
             statusEl.textContent = "トリセツ生成中にエラーが起きたようじゃ…。";
+            catchEl.textContent = "";
             return;
           }
 
           const reader  = resp.body.getReader();
           const decoder = new TextDecoder("utf-8");
           let firstChunk = true;
+          let fullText = "";
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            let chunk = decoder.decode(value, { stream: true });
 
-            // 最初のダミーの空白などを削る
+            let chunk = decoder.decode(value, { stream: true });
             if (firstChunk) {
-              chunk = chunk.replace(/^\s+/, "");
+              chunk = chunk.replace(/^\s+/, ""); // 先頭の余計な空白を削る
               firstChunk = false;
             }
-
-            bodyEl.textContent += chunk;
+            fullText += chunk;
           }
 
-          statusEl.textContent = "トリセツの生成が完了したぞ。じっくり読んでみるのじゃ。";
+          if (!fullText.trim()) {
+            statusEl.textContent = "トリセツの文章がうまく生成できんかったようじゃ…。";
+            catchEl.textContent = "";
+            return;
+          }
+
+          renderReport(fullText);
         } catch (e) {
           console.error(e);
           statusEl.textContent = "トリセツ生成中に何かトラブルが起きたようじゃ…。";
+          catchEl.textContent = "";
         }
+      }
+
+      // キャッチコピーと本文に分割して描画
+      function renderReport(fullText) {
+        const norm = fullText.replace(/\r\n/g, "\n");
+        const lines = norm.split("\n");
+
+        let firstLineIndex = -1;
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].trim() !== "") {
+            firstLineIndex = i;
+            break;
+          }
+        }
+
+        let catchLine = "";
+        if (firstLineIndex >= 0) {
+          catchLine = lines[firstLineIndex].trim();
+          lines[firstLineIndex] = ""; // 本文側からは一旦抜く
+        }
+
+        catchEl.textContent = catchLine || `${name}の恋愛トリセツ`;
+
+        // 残りを本文として表示
+        const bodyText = lines.join("\n").replace(/^\s+/, "");
+        bodyEl.textContent = bodyText;
+
+        statusEl.textContent = "トリセツの生成が完了したぞ。じっくり読んでみるのじゃ。";
+        nickEl.textContent = `${name}の恋愛トリセツ（無料版）`;
       }
 
       fetchReport();
