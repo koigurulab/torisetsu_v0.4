@@ -103,13 +103,16 @@
       color: #ff4b8a;
       text-align: center;
     }
+
+    /* キャッチコピー本文（星のかけら型…など） */
     .catchcopy-main {
-      margin: 0 0 16px;
+      margin: 4px 0 16px;
       font-size: 16px;
       font-weight: 700;
-      color: #ff4b8a;
+      color: #333;
       text-align: center;
     }
+
     .sub-headline {
       margin-top: 18px;
       margin-bottom: 8px;
@@ -185,6 +188,7 @@
 
         const htmlParts = [];
         let mainHeadlineDone = false;
+        let expectCatchcopyMain = false; // 次の非空行をキャッチコピー本文として扱うかどうか
 
         for (let i = 0; i < lines.length; i++) {
           const rawLine = lines[i];
@@ -193,6 +197,16 @@
           // 完全な空行は段落の隙間だけ作る
           if (!line) {
             htmlParts.push('<p class="paragraph-space"></p>');
+            continue;
+          }
+
+          // 直前に「キャッチコピー見出し」があり、
+          // まだ本文を拾っていない場合はこの行をキャッチコピー本文にする
+          if (expectCatchcopyMain) {
+            htmlParts.push(
+              `<p class="catchcopy-main">${escapeHtml(line)}</p>`
+            );
+            expectCatchcopyMain = false;
             continue;
           }
 
@@ -224,6 +238,10 @@
                 htmlParts.push(
                   `<p class="catchcopy-main">${escapeHtml(restText)}</p>`
                 );
+                expectCatchcopyMain = false;
+              } else {
+                // 次の非空行をキャッチコピー本文として扱う
+                expectCatchcopyMain = true;
               }
             } else {
               // 仕事モード・恋愛モードなどの小見出し
@@ -231,6 +249,7 @@
               if (restText) {
                 htmlParts.push(`<p>${escapeHtml(restText)}</p>`);
               }
+              expectCatchcopyMain = false;
             }
           } else {
             // 通常の本文段落
@@ -241,7 +260,7 @@
         bodyEl.innerHTML = htmlParts.join("\n");
       }
 
-      // レポートを取得（ストリームで受信しつつ、最後に整形して表示）
+      // レポートを取得（ストリームで受信しつつ、途中はプレーンテキスト表示 → 完了後に整形）
       async function fetchReport() {
         try {
           const resp = await fetch("/api/free-report-stream", {
@@ -258,14 +277,27 @@
           const reader  = resp.body.getReader();
           const decoder = new TextDecoder("utf-8");
           let fullText = "";
+          let firstChunk = true;
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
+
+            let chunk = decoder.decode(value, { stream: true });
+
+            // 最初のチャンクの頭に入っている余計な空白などを削る
+            if (firstChunk) {
+              chunk = chunk.replace(/^\s+/, "");
+              firstChunk = false;
+            }
+
             fullText += chunk;
+
+            // 執筆中はプレーンテキストとしてだんだん表示
+            bodyEl.textContent = fullText;
           }
 
+          // すべて受信し終わったら、見出し付きのレイアウトに整形して表示
           renderReport(fullText);
           statusEl.textContent = "トリセツの生成が完了したぞ。じっくり読んでみるのじゃ。";
         } catch (e) {
