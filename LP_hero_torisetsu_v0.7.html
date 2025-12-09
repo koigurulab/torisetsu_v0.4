@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>恋愛トリセツ仙人 | 世界に1枚だけの恋愛トリセツ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      background: #ffeaf3;
+      color: #333;
+    }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .shell {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 56px;
+    }
+
+    /* 共通カード */
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 14px 40px rgba(255, 153, 187, 0.25);
+    }
+    .hero-layout {
+      padding: 24px 20px 24px;
+    }
+    .section-card {
+      padding: 24px 20px 28px;
+      margin-top: 24px;
+    }
+
+    /* Hero タグ */
+    .pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #ffe0ef;
+      color: #ff4b8b;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .pill-tag-icon {
+      font-size: 12px;
+    }
+
+    /* 見出し */
+    .hero-title {
+      font-size: 28px;
+      line-height: 1.4;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .hero-title span {
+      display: block;
+    }
+    .hero-title span:nth-child(2) {
+      color: #ff4b8b;
+    }
+
+    .hero-lead {
+      font-size: 14px;
+      line-height: 1.9;
+      margin-bottom: 16px;
+    }
+
+    .hero-list {
+      list-style: none;
+      font-size: 14px;
+      line-height: 1.9;
+      margin-bottom: 20px;
+    }
+    .hero-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .hero-list li::before {
+      content: "✓";
+      color: #ff4b8b;
+      margin-top: 2px;
+      font-size: 14px;
+    }
+
+    /* CTA */
+    .primary-cta {
+      margin-top: 20px;
+    }
+    .primary-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 420px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(90deg, #ff6b9c, #ff3f8b);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 8px 22px rgba(255, 105, 155, 0.35);
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, filter 0.08s ease-out;
+    }
+    .primary-cta-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 12px 28px rgba(255, 105, 155, 0.4);
+    }
+    .cta-note {
+      font-size: 11px;
+      color: #777;
+      margin-top: 6px;
+    }
+
+    /* 仙人エリア（Hero 内） */
+    .hero-sennin {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .sennin-image-wrap {
+      flex: 0 0 45%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 0;
+    }
+    .sennin-image-wrap img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    .sennin-bubble {
+      flex: 1;
+      background: #ffe6f1;
+      border-radius: 18px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.7;
+      position: relative;
+      white-space: normal; /* 自動改行に任せる */
+    }
+    .sennin-bubble::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      bottom: 18px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent #ffe6f1 transparent transparent;
+    }
+
+    /* セクションタイトル共通 */
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .section-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ff4b8b;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #ffe0ef;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    /* FEATURE ボックス */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 6px;
+    }
+    .feature-box {
+      border-radius: 18px;
+      padding: 12px 12px 14px;
+      background: #fff3f8;
+      border: 1px solid #ffd3e7;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .feature-box-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #ff4b8b;
+      margin-bottom: 4px;
+    }
+
+    /* FLOW */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 6px;
+    }
+    .flow-step {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .flow-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: #ffe0ef;
+      color: #ff4b8b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .flow-step-title {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    /* FOR WHO */
+    .forwho-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .forwho-tag {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #ffe8f3;
+      color: #ff4b8b;
+      white-space: nowrap;
+    }
+    .forwho-lead {
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    /* FAQ */
+    .faq-item {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+    .faq-q {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .faq-q::before {
+      content: "Q. ";
+    }
+    .faq-a::before {
+      content: "A. ";
+      font-weight: 700;
+    }
+
+    /* Closing CTA */
+    .closing-title {
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .closing-text {
+      font-size: 13px;
+      line-height: 1.9;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .closing-cta-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid #ff8ab3;
+      background: #fff;
+      color: #ff4b8b;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* レスポンシブ */
+    @media (min-width: 768px) {
+      .shell {
+        padding: 32px 24px 72px;
+      }
+      .hero-layout {
+        padding: 28px 32px 30px;
+      }
+      .hero-title {
+        font-size: 32px;
+      }
+      .hero-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .hero-layout {
+        padding: 24px 18px 24px;
+      }
+      .section-card {
+        padding: 20px 16px 24px;
+      }
+      .hero-sennin {
+        gap: 10px;
+      }
+      .sennin-image-wrap {
+        flex-basis: 40%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="shell">
+
+      <!-- Hero -->
+      <section class="card hero-layout">
+        <div class="hero-main">
+          <div class="hero-text">
+
+            <div class="pill-tag">
+              <span class="pill-tag-icon">♡</span>
+              <span>”恋のクセ”と”これから”が見えてくる</span>
+            </div>
+
+            <h1 class="hero-title">
+              <span>世界に1枚・あなた専用の</span>
+              <span>恋愛トリセツを作れます</span>
+            </h1>
+
+            <p class="hero-lead">
+              MBTI・恋愛16タイプ・いまの恋の状況をもとに、恋愛仙人AIが、あなただけの「恋のスタイル」と
+              つまずきやすいポイントを言語化します。
+            </p>
+
+            <ul class="hero-list">
+              <li>MBTI×恋愛16タイプ×今の状況で、あなただけを専用に分析</li>
+              <li>ニックネームだけでスタート（登録不要・無料）</li>
+              <li>いつでも見返せるスクショ用トリセツつき</li>
+            </ul>
+
+            <div class="hero-sennin">
+              <div class="sennin-image-wrap">
+                <img src="sennin.png" alt="恋愛トリセツ仙人" />
+              </div>
+              <div class="sennin-bubble">
+                質問に答えていくだけで、わしが、おぬしの恋のクセ・しんどくなりやすい場面と、伸ばすべき強みを一緒に整理するんじゃ。
+              </div>
+            </div>
+
+            <div class="primary-cta">
+              <a href="#intake" class="primary-cta-btn">
+                無料で恋愛トリセツをつくる
+              </a>
+              <div class="cta-note">
+                ※いまはテスト版です。生成されたトリセツはスクショして保管してください。
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURE -->
+      <section class="card section-card">
+        <div class="section-title-row">
+          <div class="section-badge">FEATURE</div>
+          <div class="section-title">このトリセツで分かること</div>
+        </div>
+        <p class="hero-lead" style="font-size:13px; margin-bottom:8px;">
+          仙人とのチャットを通して、「今の恋のスタイル」「つまずきやすい場面」「これからの一歩」をまとめて見える化します。
+        </p>
+        <div class="feature-grid">
+          <div class="feature-box">
+            <div class="feature-box-title">今の「恋のスタイル」</div>
+            MBTIと恋愛16タイプ、回答内容から、<br />
+            おぬしのスピード感・感情の波・相手との距離感を<br />
+            一言ラベルで表現します。
+          </div>
+          <div class="feature-box">
+            <div class="feature-box-title">つまずきやすい場面</div>
+            「連絡が減ったとき」「SNSを見たとき」など、<br />
+            実際の場面ベースで心が折れやすい瞬間を整理します。
+          </div>
+          <div class="feature-box">
+            <div class="feature-box-title">これからの一歩</div>
+            理想の在り方や大事にしたい価値観から、<br />
+            いまのスタイルを活かしつつ、<br />
+            ちょっと楽になるための一歩を言語化します。
+          </div>
+          <div class="feature-box">
+            <div class="feature-box-title">スクショでいつでも見返せる</div>
+            生成されたトリセツはスマホ1枚で収まる量を想定。<br />
+            後から見返しても分かりやすい構成で出力されます。
+          </div>
+        </div>
+      </section>
+
+      <!-- FLOW -->
+      <section class="card section-card">
+        <div class="section-title-row">
+          <div class="section-badge">FLOW</div>
+          <div class="section-title">トリセツができるまで</div>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-step-num">1</div>
+            <div>
+              <div class="flow-step-title">仙人とチャットで、今の状況を話す</div>
+              ニックネーム・MBTI・恋愛16タイプにくわえて、<br />
+              仕事モード／恋愛モード／これまでのパターン、<br />
+              「いちばんしんどかった瞬間」などを答えていきます。
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num">2</div>
+            <div>
+              <div class="flow-step-title">裏側でAIが「恋のクセ」を分析</div>
+              回答内容をもとに、スピード感・感情の波・<br />
+              相手優先度・コア欲求を推論し、<br />
+              内部でおぬし専用の恋の設計図を組み立てます。
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-step-num">3</div>
+            <div>
+              <div class="flow-step-title">その場で“世界に一枚のトリセツ”が表示される</div>
+              キャッチコピー／仕事モード・恋愛モード／強み／<br />
+              つまずき／まとめの一言まで、<br />
+              スマホ1枚で読み切れるボリュームで表示されます。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOR WHO -->
+      <section class="card section-card">
+        <div class="section-title-row">
+          <div class="section-badge">FOR WHO</div>
+          <div class="section-title">こんなときに使ってほしい</div>
+        </div>
+        <p class="forwho-lead">
+          ただ「当たっている・当たっていない」を見るだけでなく、<br />
+          今の恋どうしようかと自分と向き合いたい人向けのトリセツです。
+        </p>
+        <div class="forwho-tags">
+          <div class="forwho-tag">相手の連絡ペースで情緒が乱れがち</div>
+          <div class="forwho-tag">過去の恋もだいたい同じ終わり方をする</div>
+          <div class="forwho-tag">友達には話しづらいモヤモヤがある</div>
+          <div class="forwho-tag">一般的な占いでは物足りない</div>
+          <div class="forwho-tag">自分の恋のクセを言語化してみたい</div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="card section-card">
+        <div class="section-title-row">
+          <div class="section-badge">FAQ</div>
+          <div class="section-title">よくある質問</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">本当に無料ですか？</div>
+          <div class="faq-a">
+            はい、いまは無料版トリセツのみ提供しています。<br />
+            将来的に有料プランを出す場合も、その前にお知らせします。
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">本名や連絡先は必要ですか？</div>
+          <div class="faq-a">
+            必要なのはニックネームと、恋の状況だけです。<br />
+            本名やメールアドレスを入力する必要はありません。
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">どれくらい時間がかかりますか？</div>
+          <div class="faq-a">
+            質問にじっくり答えた場合でも、5〜10分程度が目安です。<br />
+            集中して向き合いたいときに使うのがおすすめです。
+          </div>
+        </div>
+      </section>
+
+      <!-- Closing CTA -->
+      <section class="card section-card">
+        <div class="closing-title">今の恋の「クセ」、一度ちゃんと言語化してみませんか？</div>
+        <p class="closing-text">
+          モヤモヤは、言葉にした瞬間から少しずつ軽くなっていきます。<br />
+          仙人とのチャットから生まれる“世界に一枚のトリセツ”、<br />
+          まずは無料版で試してみてください。
+        </p>
+        <div class="closing-cta-row">
+          <a href="#intake" class="primary-cta-btn">無料で恋愛トリセツをつくる</a>
+          <a href="#sample" class="secondary-btn">トリセツの見本だけ先に見てみる</a>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</body>
+</html>
