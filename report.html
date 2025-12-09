@@ -262,49 +262,42 @@
 
       // レポートを取得（ストリームで受信しつつ、途中はプレーンテキスト表示 → 完了後に整形）
       async function fetchReport() {
-        try {
-          const resp = await fetch("/api/free-report-stream", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(answers),
-          });
+  try {
+    const resp = await fetch("/api/free-report-stream", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(answers),
+    });
 
-          if (!resp.ok || !resp.body) {
-            statusEl.textContent = "トリセツ生成中にエラーが起きたようじゃ…。";
-            return;
-          }
+    if (!resp.ok || !resp.body) {
+      statusEl.textContent = "トリセツ生成中にエラーが起きたようじゃ…。";
+      return;
+    }
 
-          const reader  = resp.body.getReader();
-          const decoder = new TextDecoder("utf-8");
-          let fullText = "";
-          let firstChunk = true;
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let fullText = "";
 
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      fullText += chunk;
+    }
 
-            let chunk = decoder.decode(value, { stream: true });
-
-            // 最初のチャンクの頭に入っている余計な空白などを削る
-            if (firstChunk) {
-              chunk = chunk.replace(/^\s+/, "");
-              firstChunk = false;
-            }
-
-            fullText += chunk;
-
-            // 執筆中はプレーンテキストとしてだんだん表示
-            bodyEl.textContent = fullText;
-          }
-
-          // すべて受信し終わったら、見出し付きのレイアウトに整形して表示
-          renderReport(fullText);
-          statusEl.textContent = "トリセツの生成が完了したぞ。じっくり読んでみるのじゃ。";
-        } catch (e) {
-          console.error(e);
-          statusEl.textContent = "トリセツ生成中に何かトラブルが起きたようじゃ…。";
-        }
-      }
+    // ▼ ここから完了時の処理
+    renderReport(fullText);
+    statusEl.textContent =
+      "トリセツの生成が完了したぞ。じっくり読んでみるのじゃ。";
+    nickEl.textContent =
+      `${name}の恋愛トリセツが完成したぞ。ぜひ友達にも教えてみてくれ。`;
+    // ▲ ここを追加
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent =
+      "トリセツ生成中に何かトラブルが起きたようじゃ…。";
+  }
+}
 
       fetchReport();
     });
