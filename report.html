@@ -4,64 +4,58 @@
   <meta charset="UTF-8" />
   <title>恋愛トリセツ仙人（無料トリセツ）</title>
   <style>
-    /* 全体レイアウト：スマホ前提 */
     body {
       margin: 0;
       padding: 0;
-      background: #ffe6f0;
+      background: #ffe5f0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       display: flex;
       justify-content: center;
     }
-
     .app {
       width: 100%;
-      max-width: 520px;
+      max-width: 480px;
       min-height: 100vh;
+      background: #ffffff;
+      box-shadow: 0 0 8px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
-      background: transparent;
     }
 
-    .top-bar {
-      padding: 14px 16px;
-      font-size: 15px;
-      font-weight: 600;
-      background: #ff8fb3;
+    /* 上部ピンクバー */
+    .header {
+      padding: 12px 16px;
+      background: #ff6b8b;
       color: #fff;
-      text-align: left;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      font-weight: 600;
+      font-size: 16px;
     }
 
     .main {
       flex: 1;
-      padding: 16px 12px 24px;
-      box-sizing: border-box;
+      padding: 12px;
+      background: #ffe5f0;
       overflow-y: auto;
     }
 
-    /* 巻物カード（背景画像はあとで差し替え想定） */
     .card {
-      background-color: #fff;
+      background: #fff;
       border-radius: 24px;
-      border: 1px solid #f4cbd8;
-      padding: 16px 18px 18px;
+      border: 1px solid #ffd4e3;
+      padding: 18px 16px 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-
-      /* 巻物をここに貼るイメージ（画像はあとで用意） */
-      background-image: url("/images/makimono.png");
+      /* 巻物背景に差し替える場合はここを編集
+      background-image: url("scroll-bg.png");
       background-size: cover;
-      background-position: center top;
       background-repeat: no-repeat;
-      backdrop-filter: blur(1px);
+      background-position: center top;
+      */
     }
-
     .card-header {
       display: flex;
       align-items: center;
       margin-bottom: 12px;
     }
-
     .avatar {
       width: 44px;
       height: 44px;
@@ -73,78 +67,66 @@
       color: #fff;
       font-weight: 700;
       margin-right: 10px;
-      font-size: 20px;
+      font-size: 18px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.12);
     }
-
     .meta-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
     }
-
     .meta-sub {
       font-size: 12px;
       color: #666;
       margin-top: 2px;
     }
-
     .card-body {
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid rgba(255,155,180,0.35);
-    }
-
-    .report-body {
+      border-top: 1px solid #ffe1ee;
       font-size: 14px;
       line-height: 1.8;
       color: #333;
+      white-space: normal;
+      word-break: break-word;
     }
-
-    .report-body p {
-      margin: 0 0 12px;
-    }
-
-    /* 見出し（◆〜） */
-    .section-title {
-      font-weight: 700;
-      color: #d94b78;
-      font-size: 16px;
-      margin: 22px 0 8px;
-    }
-
-    /* 一番上の「◆○○のキャッチコピー」専用 */
-    .section-title.main {
-      font-size: 20px;
-      text-align: center;
-      margin-top: 8px;
-      margin-bottom: 12px;
-    }
-
-    /* キャッチコピー本文（1行目） */
-    .catchcopy-line {
-      font-weight: 700;
-      font-size: 16px;
-      color: #c7436d;
-      margin: 0 0 18px;
-      text-align: center;
-    }
-
-    /* 段落間の余白を補助的に入れたい場合 */
-    .para-space {
-      margin: 10px 0;
-    }
-
     .card-footer {
-      margin-top: 12px;
+      margin-top: 14px;
       font-size: 12px;
       color: #777;
+    }
+
+    /* 見出し系 */
+    .main-headline {
+      margin: 8px 0 8px;
+      font-size: 19px;
+      font-weight: 700;
+      color: #ff4b8a;
+      text-align: center;
+    }
+    .catchcopy-main {
+      margin: 0 0 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ff4b8a;
+      text-align: center;
+    }
+    .sub-headline {
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #ff4b8a;
+    }
+    .paragraph-space {
+      height: 0.6em;
+    }
+    .card-body p {
+      margin: 0 0 6px;
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="top-bar">恋愛トリセツ仙人（無料トリセツ）</div>
-
+    <div class="header">恋愛トリセツ仙人（無料トリセツ）</div>
     <div class="main">
       <div class="card">
         <div class="card-header">
@@ -154,12 +136,9 @@
             <div class="meta-sub" id="nickname-line">いま仙人が執筆中じゃ…</div>
           </div>
         </div>
-
-        <div class="card-body">
-          <div id="report-body" class="report-body"></div>
-          <div id="status" class="card-footer">
-            トリセツを生成しておるから、しばし待つのじゃ…
-          </div>
+        <div id="report-body" class="card-body"></div>
+        <div id="status" class="card-footer">
+          トリセツを生成しておるから、しばし待つのじゃ…
         </div>
       </div>
     </div>
@@ -167,9 +146,9 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const reportBodyEl = document.getElementById("report-body");
-      const statusEl     = document.getElementById("status");
-      const nickEl       = document.getElementById("nickname-line");
+      const bodyEl   = document.getElementById("report-body");
+      const statusEl = document.getElementById("status");
+      const nickEl   = document.getElementById("nickname-line");
 
       // インテークから保存しておいた回答を取得
       let raw = localStorage.getItem("freeReportAnswers");
@@ -188,55 +167,81 @@
       }
 
       const name = answers?.profile?.name || "お主";
-      nickEl.textContent = `${name}の恋愛トリセツ（無料版）じゃ。`;
+      nickEl.textContent = `${name}のトリセツを執筆中じゃ…`;
 
-      // テキストをHTMLに変換する（◆見出し＋キャッチコピー強調）
+      // HTML用エスケープ
       function escapeHtml(str) {
-        return str
+        return (str || "")
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
+          .replace(/"/g, "&quot;");
       }
 
-      function convertReportToHtml(text) {
-        const paragraphs = text.split(/\n{2,}/); // 空行で段落分割
-        let html = "";
-        let seenFirstHeading = false;
-        let usedCatchcopyParagraph = false;
+      // LLMの素のテキストを、見出し・キャッチコピー付きのHTMLに変換
+      function renderReport(text) {
+        const normalized = (text || "").replace(/\r\n/g, "\n");
+        const lines = normalized.split("\n");
 
-        for (let i = 0; i < paragraphs.length; i++) {
-          const rawPara = paragraphs[i];
-          const trimmed = rawPara.trim();
-          if (!trimmed) continue;
+        const htmlParts = [];
+        let mainHeadlineDone = false;
 
-          // ◆から始まる行は見出し扱い
-          if (trimmed.startsWith("◆")) {
-            if (!seenFirstHeading) {
-              seenFirstHeading = true;
-              html += `<p class="section-title main">${escapeHtml(trimmed)}</p>`;
-            } else {
-              html += `<p class="section-title">${escapeHtml(trimmed)}</p>`;
+        for (let i = 0; i < lines.length; i++) {
+          const rawLine = lines[i];
+          const line = rawLine.trim();
+
+          // 完全な空行は段落の隙間だけ作る
+          if (!line) {
+            htmlParts.push('<p class="paragraph-space"></p>');
+            continue;
+          }
+
+          // ◆ で始まる行は見出し処理
+          if (line.startsWith("◆")) {
+            // 「◆〜〜」部分と、その後ろの本文を分離（スペース or 全角スペース）
+            const m = line.match(/^(◆\s*[^\s　]+(?:の[^\s　]+)*)(?:[ \u3000]+(.*))?$/);
+            let heading = line;
+            let restText = "";
+
+            if (m) {
+              heading = m[1];
+              restText = m[2] || "";
             }
-            continue;
-          }
 
-          // 最初の見出し直後の段落をキャッチコピーとして太字＋中央寄せ
-          if (seenFirstHeading && !usedCatchcopyParagraph) {
-            usedCatchcopyParagraph = true;
-            html += `<p class="catchcopy-line">${escapeHtml(trimmed)}</p>`;
-            continue;
-          }
+            const escHeading = escapeHtml(heading);
 
-          // 通常段落
-          html += `<p>${escapeHtml(trimmed)}</p>`;
+            if (heading.includes("キャッチコピー")) {
+              // メインのキャッチコピー見出し
+              if (!mainHeadlineDone) {
+                htmlParts.push(`<p class="main-headline">${escHeading}</p>`);
+                mainHeadlineDone = true;
+              } else {
+                htmlParts.push(`<p class="sub-headline">${escHeading}</p>`);
+              }
+
+              // 同じ行の後ろにキャッチコピー本文がある場合
+              if (restText) {
+                htmlParts.push(
+                  `<p class="catchcopy-main">${escapeHtml(restText)}</p>`
+                );
+              }
+            } else {
+              // 仕事モード・恋愛モードなどの小見出し
+              htmlParts.push(`<p class="sub-headline">${escHeading}</p>`);
+              if (restText) {
+                htmlParts.push(`<p>${escapeHtml(restText)}</p>`);
+              }
+            }
+          } else {
+            // 通常の本文段落
+            htmlParts.push(`<p>${escapeHtml(line)}</p>`);
+          }
         }
 
-        return html;
+        bodyEl.innerHTML = htmlParts.join("\n");
       }
 
-      // ストリーミングでレポート取得
+      // レポートを取得（ストリームで受信しつつ、最後に整形して表示）
       async function fetchReport() {
         try {
           const resp = await fetch("/api/free-report-stream", {
@@ -252,28 +257,16 @@
 
           const reader  = resp.body.getReader();
           const decoder = new TextDecoder("utf-8");
-          let firstChunk = true;
-          let rawText = "";
+          let fullText = "";
 
-          // まずはプレーンテキストとして徐々に表示
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-
-            let chunk = decoder.decode(value, { stream: true });
-            if (firstChunk) {
-              chunk = chunk.replace(/^\s+/, "");
-              firstChunk = false;
-            }
-
-            rawText += chunk;
-            reportBodyEl.textContent = rawText; // ストリーミング中は素のテキスト
+            const chunk = decoder.decode(value, { stream: true });
+            fullText += chunk;
           }
 
-          // 完了後に装飾付きHTMLに差し替える
-          const formatted = convertReportToHtml(rawText);
-          reportBodyEl.innerHTML = formatted;
-
+          renderReport(fullText);
           statusEl.textContent = "トリセツの生成が完了したぞ。じっくり読んでみるのじゃ。";
         } catch (e) {
           console.error(e);
