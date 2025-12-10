@@ -1,4 +1,4 @@
-// api/free-report-stream.j
+// api/free-report-stream.js
 export const config = {
   runtime: "edge",
 };
@@ -259,6 +259,7 @@ ${JSON.stringify(answers)}
         model: "gpt-4o-mini",
         temperature: 0,
         stream: false,
+        response_format: { type: "json_object" }, // ★ JSON専用フォーマット
         messages: [
           { role: "system", content: OS_ANALYZER_SYSTEM_PROMPT },
           { role: "user", content: osUserPrompt },
@@ -273,15 +274,36 @@ ${JSON.stringify(answers)}
     }
 
     const osData = await osResp.json();
-    const osContent =
+
+    // message.content は string 想定だが、念のため文字列化＋クレンジング
+    let osContent =
       osData.choices?.[0]?.message?.content &&
-      String(osData.choices[0].message.content).trim();
+      String(osData.choices[0].message.content);
+
+    osContent = (osContent || "").trim();
+
+    // ```json や ``` を除去（念のため）
+    osContent = osContent
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    // 先頭の { から最後の } までを抜き出す
+    const firstBrace = osContent.indexOf("{");
+    const lastBrace = osContent.lastIndexOf("}");
+
+    if (firstBrace === -1 || lastBrace === -1) {
+      console.error("LoveOS JSON braces not found:", osContent);
+      return new Response("Failed to parse OS profile", { status: 500 });
+    }
+
+    const jsonString = osContent.slice(firstBrace, lastBrace + 1);
 
     let loveOS;
     try {
-      loveOS = JSON.parse(osContent || "{}");
+      loveOS = JSON.parse(jsonString);
     } catch (e) {
-      console.error("Failed to parse LoveOS JSON:", e, osContent);
+      console.error("Failed to parse LoveOS JSON:", e, jsonString);
       return new Response("Failed to parse OS profile", { status: 500 });
     }
 
