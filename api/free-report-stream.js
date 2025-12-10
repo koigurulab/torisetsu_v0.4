@@ -1,4 +1,4 @@
-// api/free-report-stream.js
+// api/free-report-stream.j
 export const config = {
   runtime: "edge",
 };
