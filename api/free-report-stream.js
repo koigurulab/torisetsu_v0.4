@@ -256,7 +256,7 @@ ${JSON.stringify(answers)}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         temperature: 0,
         stream: false,
         response_format: { type: "json_object" }, // ★ JSON専用フォーマット
