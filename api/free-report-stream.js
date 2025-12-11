@@ -228,8 +228,9 @@ MBTI と恋愛16タイプは、「診断説明のコピペ」ではなく、
 - 「大事にすることが大事」「寄り添うことが大切」など中身の薄い決まり文句だけで終わらせること。
 - 「OS」「プロファイル」「バーナム効果」など、内部用語を本文に出すこと。
 `;
+
 // =====================================
-// メインハンドラ（2ステップ生成）
+// メインハンドラ（1ステップ生成）
 // =====================================
 export default async function handler(req) {
   if (req.method !== "POST") {
@@ -245,83 +246,14 @@ export default async function handler(req) {
     }
 
     // ==============================
-    // Step1: OS解析（非ストリーム）
+    // トリセツ生成（ストリーム）
     // ==============================
-    const osUserPrompt = `
-以下は、恋愛トリセツ用のインテークデータじゃ。
+    const userPrompt = `
+以下は、恋愛トリセツ生成用のインテークデータじゃ。
 profile / workMode / loveMode / pastPattern / painPoints / values / currentStatus / followups を含んでおる。
-これを読み取り、SYSTEM PROMPT に従って LoveOS 型の JSON を1つだけ返すのじゃ。
+これを読み取り、SYSTEM PROMPT のルールに従って、無料版の恋愛トリセツを1本だけ書くのじゃ。
 
 ${JSON.stringify(answers)}
-`;
-
-    const osResp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        temperature: 0,
-        stream: false,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: OS_ANALYZER_SYSTEM_PROMPT },
-          { role: "user", content: osUserPrompt },
-        ],
-      }),
-    });
-
-    if (!osResp.ok) {
-      const errText = await osResp.text().catch(() => "");
-      console.error("OpenAI OS analyzer error:", errText);
-      return new Response("Failed to analyze love OS", { status: 500 });
-    }
-
-    const osData = await osResp.json();
-
-    let osContent =
-      osData.choices?.[0]?.message?.content &&
-      String(osData.choices[0].message.content);
-
-    osContent = (osContent || "").trim();
-
-    osContent = osContent
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
-
-    const firstBrace = osContent.indexOf("{");
-    const lastBrace = osContent.lastIndexOf("}");
-
-    if (firstBrace === -1 || lastBrace === -1) {
-      console.error("LoveOS JSON braces not found:", osContent);
-      return new Response("Failed to parse OS profile", { status: 500 });
-    }
-
-    const jsonString = osContent.slice(firstBrace, lastBrace + 1);
-
-    let loveOS;
-    try {
-      loveOS = JSON.parse(jsonString);
-    } catch (e) {
-      console.error("Failed to parse LoveOS JSON:", e, jsonString);
-      return new Response("Failed to parse OS profile", { status: 500 });
-    }
-
-    // ==============================
-    // Step2: トリセツ生成（ストリーム）
-    // ==============================
-    const reportUserPrompt = `
-以下は、プロフィール情報・回答データ・LoveOS（内部メモ）じゃ。
-これらをもとに、SYSTEM PROMPT に従って「あゆむのトリセツ」のように具体的で場面が浮かぶ無料版トリセツを1本だけ書くのじゃ。
-
-${JSON.stringify({
-  profile: answers.profile,
-  answers,
-  loveOS,
-})}
 `;
 
     const openaiResp = await fetch(
@@ -337,8 +269,8 @@ ${JSON.stringify({
           temperature: 0.8,
           stream: true,
           messages: [
-            { role: "system", content: TORISETSU_SYSTEM_PROMPT },
-            { role: "user", content: reportUserPrompt },
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userPrompt },
           ],
         }),
       }
@@ -388,11 +320,12 @@ ${JSON.stringify({
                   controller.enqueue(encoder.encode(delta));
                 }
               } catch {
-                // JSON でない行（コメントなど）はスキップ
+                // JSON でない行はスキップ
               }
             }
           }
 
+          // 残りバッファも一応処理
           const last = buffer.trim();
           if (last.startsWith("data:")) {
             const data = last.replace(/^data:\s*/, "");
