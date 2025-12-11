@@ -3,8 +3,8 @@ export const config = {
   runtime: "edge",
 };
 
-// 比喩ラベル決定モジュール
-import { chooseMetaphorLabel } from "@/lib/metaphor";
+// ルート直下に lib/ があるので 1 つ上に戻る
+import { chooseMetaphorLabel } from "../lib/metaphor.js";
 
 const SYSTEM_PROMPT = `
 あなたは「恋愛トリセツ仙人」というキャラクターAIじゃ。
