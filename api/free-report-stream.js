@@ -1,24 +1,11 @@
 // api/free-report-stream.js
-export const config = {
-  runtime: "edge",
-};
 
 // ルート直下に lib/ があるので 1 つ上に戻る
 import { chooseMetaphorLabel } from "../lib/metaphor.js";
 
-const answers = await req.json();
-
-// ここで 96個のどれかを選ぶ
-const metaphorLabel = chooseMetaphorLabel(answers);
-
-const userPrompt = `
-以下は、恋愛トリセツ生成用のインテークデータじゃ。
-profile / workMode / loveMode / pastPattern / painPoints / values / currentStatus / followups に加えて、
-すでに決定済みの metaphorLabel も渡しておる。
-metaphorLabel はキャッチコピーに使う“□□型”ラベルじゃ。これ以外のラベルを作ってはならん。
-
-${JSON.stringify({ ...answers, metaphorLabel })}
-`;
+export const config = {
+  runtime: "edge",
+};
 
 const SYSTEM_PROMPT = `
 あなたは「恋愛トリセツ仙人」というキャラクターAIじゃ。
@@ -139,7 +126,7 @@ MBTI と恋愛16タイプは、「診断説明のコピペ」ではなく、
   - {metaphorLabel} の文字列は一切改変せず、そのまま使う。
   - 別の “〇〇型” ラベルを新しく作ったり、言い換えたりしてはならない。
 - 1行目の内容は、
-  - A：外から見える魅力（例：人を楽しませたい勢い、場を回すサービス精神 など）
+  - A：外から見える魅力（例：人を楽しませたい勢い、場を回そうとするサービス精神 など）
   - B：内側のブレーキや不安（例：嫌われたくない怖さ、自分だけ本気なんじゃないかという心配 など）
   の2つが同じ人の中に同居していることが伝わる1文にすること。
 - このプロンプト内に書かれている例文（「AとBが同じ線路を走る〜」など）のフレーズを、
