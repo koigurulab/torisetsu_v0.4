@@ -256,7 +256,7 @@ export default async function handler(req) {
       return new Response("OPENAI_API_KEY is not set", { status: 500 });
     }
 
-    // 比喩ラベルをバックエンド側で確定
+    // ここで 96 個のどれかを確定
     const metaphorLabel = chooseMetaphorLabel({
       profile: answers.profile,
     });
@@ -285,7 +285,7 @@ ${JSON.stringify({
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          temperature: 0.8,
+          temperature: 0.4, // ちょっと下げて指示順守寄りに
           stream: true,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
@@ -311,6 +311,10 @@ ${JSON.stringify({
 
         const reader = openaiResp.body.getReader();
         let buffer = "";
+        let firstSegmentBuffer = "";
+        let labelPatched = false;
+
+        const labelRegex = /“([^”]*?型)”/; // 最初の “○○型” を捕まえる
 
         try {
           while (true) {
@@ -328,6 +332,17 @@ ${JSON.stringify({
 
               const data = line.replace(/^data:\s*/, "");
               if (data === "[DONE]") {
+                // もしここまでで一度も流していなければ、最後にまとめて流す
+                if (!labelPatched && firstSegmentBuffer) {
+                  // ラベルを強制的に差し替え
+                  const patched =
+                    firstSegmentBuffer.replace(
+                      labelRegex,
+                      `“${metaphorLabel}”`
+                    ) || firstSegmentBuffer;
+                  controller.enqueue(encoder.encode(patched));
+                  firstSegmentBuffer = "";
+                }
                 controller.close();
                 return;
               }
@@ -335,30 +350,44 @@ ${JSON.stringify({
               try {
                 const json = JSON.parse(data);
                 const delta = json.choices?.[0]?.delta?.content || "";
-                if (delta) {
-                  controller.enqueue(encoder.encode(delta));
+                if (!delta) continue;
+
+                let outText = delta;
+
+                // まだラベル差し替えが終わっていない間は、バッファにためる
+                if (!labelPatched) {
+                  firstSegmentBuffer += delta;
+
+                  const m = labelRegex.exec(firstSegmentBuffer);
+                  if (m) {
+                    // 最初の “○○型” を “${metaphorLabel}” に差し替える
+                    const patched = firstSegmentBuffer.replace(
+                      labelRegex,
+                      `“${metaphorLabel}”`
+                    );
+                    labelPatched = true;
+                    outText = patched;
+                    firstSegmentBuffer = "";
+                  } else {
+                    // まだ “○○型” が出てきていないので、ユーザには流さない
+                    continue;
+                  }
                 }
+
+                // ラベル差し替え済み以降は、そのまま垂れ流し
+                controller.enqueue(encoder.encode(outText));
               } catch {
                 // JSON でない行はスキップ
               }
             }
           }
 
-          // 残りバッファも一応処理
-          const last = buffer.trim();
-          if (last.startsWith("data:")) {
-            const data = last.replace(/^data:\s*/, "");
-            if (data !== "[DONE]") {
-              try {
-                const json = JSON.parse(data);
-                const delta = json.choices?.[0]?.delta?.content || "";
-                if (delta) {
-                  controller.enqueue(encoder.encode(delta));
-                }
-              } catch {
-                // 無視
-              }
-            }
+          // ストリーム終了時点で、まだ何も流していなかった場合のフォールバック
+          if (!labelPatched && firstSegmentBuffer) {
+            const patched =
+              firstSegmentBuffer.replace(labelRegex, `“${metaphorLabel}”`) ||
+              firstSegmentBuffer;
+            controller.enqueue(encoder.encode(patched));
           }
         } catch (e) {
           console.error(e);
